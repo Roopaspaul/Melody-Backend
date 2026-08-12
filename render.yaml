@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: melody-backend
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://mysql-206569c4-roopaspaulkodi-7cfc.h.aivencloud.com:14788/defaultdb?useSSL=true&requireSSL=true&verifyServerCertificate=false
+      - key: SPRING_DATASOURCE_USERNAME
+        value: avnadmin
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false # Render will prompt you to enter the Aiven database password on deploy
+      - key: SPRING_MAIL_USERNAME
+        sync: false # Render will prompt you to enter your Gmail address on deploy
+      - key: SPRING_MAIL_PASSWORD
+        sync: false # Render will prompt you to enter your Gmail app password on deploy
+      - key: PORT
+        value: 8080
