@@ -10,6 +10,10 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"brand", "category", "subCategory", "images"})
+    @Query("SELECT p FROM Product p")
+    List<Product> findAllWithRelations();
+
     Optional<Product> findBySlug(String slug);
     Optional<Product> findBySku(String sku);
     boolean existsByName(String name);

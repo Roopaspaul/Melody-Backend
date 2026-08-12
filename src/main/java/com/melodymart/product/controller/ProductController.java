@@ -55,7 +55,7 @@ public class ProductController {
             @RequestParam(value = "sort", required = false) String sort,
             @RequestParam(value = "includeDeleted", required = false, defaultValue = "false") boolean includeDeleted) {
 
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productRepository.findAllWithRelations();
 
         // Filter
         products = products.stream()
