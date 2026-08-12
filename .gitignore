@@ -1,0 +1,16 @@
+target/
+*.class
+*.jar
+*.war
+*.ear
+.classpath
+.project
+.settings/
+bin/
+.idea/
+*.iml
+*.iws
+.vscode/
+.env
+.env.*
+!.env.example
