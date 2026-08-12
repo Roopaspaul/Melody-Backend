@@ -43,7 +43,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
-            return true;
+            return false;
         }
 
         // 3. Extract and parse JWT from Authorization Header
