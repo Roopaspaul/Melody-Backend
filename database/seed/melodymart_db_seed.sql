@@ -3,7 +3,6 @@
 -- Seed data for melodymart_db (JPA Unified Database)
 -- ============================================================================
 
-USE `melodymart_db`;
 
 -- Set default values for JPA dynamic fields
 ALTER TABLE `products` ALTER COLUMN `is_deleted` SET DEFAULT 0;
