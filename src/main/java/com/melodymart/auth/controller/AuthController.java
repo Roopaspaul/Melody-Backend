@@ -319,6 +319,7 @@ public class AuthController {
             emailService.sendOtpEmail(user.getEmail(), user.getFirstName(), code);
         } catch (Exception e) {
             System.err.println("Failed to send verification email: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
