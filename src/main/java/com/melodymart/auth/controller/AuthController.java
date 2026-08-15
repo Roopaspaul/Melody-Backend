@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -323,15 +324,22 @@ public class AuthController {
         otp.setIsUsed(false);
         emailOtpRepository.save(otp);
 
+        System.out.println("==========================================================================");
         System.out.println(">>> [SECURITY Relayed OTP] " + purpose + " Code generated for user " + user.getUsername() + " (" + user.getEmail() + "): " + code);
+        System.out.println("==========================================================================");
 
-        // Send Email
-        try {
-            emailService.sendOtpEmail(user.getEmail(), user.getFirstName(), code);
-        } catch (Exception e) {
-            System.err.println("Failed to send verification email: " + e.getMessage());
-            e.printStackTrace();
-        }
+        // Dispatch Email asynchronously to recipient given in registration form
+        final String recipientEmail = user.getEmail();
+        final String recipientName = user.getFirstName();
+        CompletableFuture.runAsync(() -> {
+            try {
+                emailService.sendOtpEmail(recipientEmail, recipientName, code);
+                System.out.println(">>> [SUCCESS] OTP email dispatched successfully to: " + recipientEmail);
+            } catch (Exception e) {
+                System.err.println(">>> [ERROR] Failed to send verification email to " + recipientEmail + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
     @PostMapping("/logout")
