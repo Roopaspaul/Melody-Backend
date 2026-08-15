@@ -13,14 +13,19 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:#{null}}")
     private String fromEmail;
 
     public void sendOtpEmail(String toEmail, String firstName, String otpCode) throws Exception {
+        if (fromEmail == null || fromEmail.trim().isEmpty()) {
+            System.err.println(">>> [SPRING MAIL WARNING] spring.mail.username is not configured. Skipping SMTP dispatch.");
+            return;
+        }
+
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setFrom(fromEmail, "MelodyMart");
+        helper.setFrom(fromEmail.trim(), "MelodyMart");
         helper.setTo(toEmail);
         helper.setSubject("[" + otpCode + "] Verify your MelodyMart Registration");
 
