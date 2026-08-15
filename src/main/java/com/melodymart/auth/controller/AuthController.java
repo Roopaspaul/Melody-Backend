@@ -51,15 +51,24 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDto dto) {
-        if (userRepository.existsByUsername(dto.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Username is already taken"));
-        }
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Email is already registered"));
+        Optional<User> existingByUsername = userRepository.findByUsername(dto.getUsername());
+        if (existingByUsername.isPresent()) {
+            User existing = existingByUsername.get();
+            if (existing.getStatus() == AccountStatus.ACTIVE) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Username is already taken"));
+            }
         }
 
-        // Save User with BCrypt password hashing
-        User user = new User();
+        Optional<User> existingByEmail = userRepository.findByEmail(dto.getEmail());
+        if (existingByEmail.isPresent()) {
+            User existing = existingByEmail.get();
+            if (existing.getStatus() == AccountStatus.ACTIVE) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Email is already registered"));
+            }
+        }
+
+        // Reuse unverified pending registration attempt or create a new user
+        User user = existingByEmail.orElseGet(() -> existingByUsername.orElseGet(User::new));
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setFullName(dto.getFirstName() + " " + dto.getLastName());
@@ -75,23 +84,25 @@ public class AuthController {
         user.setIsPhoneVerified(false);
         user = userRepository.save(user);
 
-        // Save default Address
-        Address address = new Address();
-        address.setUser(user);
-        address.setAddressLine1("Primary Street");
-        address.setCity("Cityville");
-        address.setState("State");
-        address.setCountry("Country");
-        address.setPostalCode("10000");
-        address.setAddressType(AddressType.HOME);
-        address.setIsDefault(true);
-        addressRepository.save(address);
+        // Save default Address if user has none
+        if (addressRepository.findByUser(user).isEmpty()) {
+            Address address = new Address();
+            address.setUser(user);
+            address.setAddressLine1("Primary Street");
+            address.setCity("Cityville");
+            address.setState("State");
+            address.setCountry("Country");
+            address.setPostalCode("10000");
+            address.setAddressType(AddressType.HOME);
+            address.setIsDefault(true);
+            addressRepository.save(address);
+        }
 
         // Send OTP
         sendNewOtp(user, OtpPurpose.REGISTRATION_VERIFICATION);
 
         return ResponseEntity.ok(Map.of(
-            "message", "Registration successful. Please verify the OTP sent to your email.",
+            "message", "Registration initiated. Please enter the OTP verification code sent to your email.",
             "userId", user.getId(),
             "username", user.getUsername()
         ));
