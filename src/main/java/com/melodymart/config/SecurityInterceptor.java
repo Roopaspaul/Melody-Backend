@@ -17,23 +17,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
     private JwtTokenRepository jwtTokenRepository;
 
     // Simple IP-based Rate Limiting map: IP -> last request timestamp
-    private final Map<String, Long> rateLimitMap = new ConcurrentHashMap<>();
-    // Rate limit window: 1 request per 100 milliseconds (simple throttling)
-    private static final long RATE_LIMIT_WINDOW_MS = 100; 
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1. IP-based rate limiting
-        String ip = request.getRemoteAddr();
-        long now = System.currentTimeMillis();
-        if (rateLimitMap.containsKey(ip)) {
-            long lastRequest = rateLimitMap.get(ip);
-            if (now - lastRequest < RATE_LIMIT_WINDOW_MS) {
-                sendErrorResponse(response, 429, "Too many requests. Please slow down.");
-                return false;
-            }
-        }
-        rateLimitMap.put(ip, now);
 
         // 2. CORS Handling (if applicable, though they are served from same origin)
         // Allow all headers for easy API access
